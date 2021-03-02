@@ -30,32 +30,69 @@ describe('app routes', () => {
     afterAll(done => {
       return client.end(done);
     });
+    
+    
+    test('creates todos for user', async() => {
 
-    test('returns animals', async() => {
+      const newItem =
+        {
+          'todo': 'gain funding',
+          'complete': false
+        };
 
-      const expectation = [
+      const expectation = 
         {
-          'id': 1,
-          'name': 'bessie',
-          'coolfactor': 3,
-          'owner_id': 1
-        },
-        {
-          'id': 2,
-          'name': 'jumpy',
-          'coolfactor': 4,
-          'owner_id': 1
-        },
-        {
-          'id': 3,
-          'name': 'spot',
-          'coolfactor': 10,
-          'owner_id': 1
-        }
-      ];
+          ...newItem,
+          'id': 4,
+          'user_id': 2
+        };
 
       const data = await fakeRequest(app)
-        .get('/animals')
+        .post('/api/todos')
+        .send(newItem)
+        .set('Authorization', token)
+        .expect('Content-Type', /json/);
+        // .expect(200);
+
+      expect(data.body).toEqual(expectation);
+    });
+
+
+
+    test('get todo-list for user', async() => {
+      const expectation = [
+        {
+          'id': 4,
+          'todo': 'gain funding',
+          'complete': false,
+          'user_id': 2
+        }];
+
+      const data = await fakeRequest(app)
+        .get('/api/todos')
+        .set('Authorization', token)
+        .expect('Content-Type', /json/)
+        .expect(200);
+
+      expect(data.body).toEqual(expectation);
+    });
+
+
+
+
+    test('update a todo-item', async() => {
+      const expectation = 
+      {
+        'id': 4,
+        'todo': 'gain funding',
+        'complete': true,
+        'user_id': 2
+      };
+
+      const data = await fakeRequest(app)
+        .put('/api/todos/4')
+        .send(expectation)
+        .set('Authorization', token)
         .expect('Content-Type', /json/)
         .expect(200);
 
